@@ -72,6 +72,20 @@ pipeline{
                }
             }
         }
+        stage('Publish to Artifactory') {
+            steps {
+                script {
+                    def server = Artifactory.server('artifactory-server')
+                    def rt = Artifactory.newBuild()
+                    rt.tool = 'maven' // Specify the build tool (e.g., Maven)
+                    rt.deployer server: server, releaseRepo: 'release-repo', snapshotRepo: 'snapshot-repo'
+                    rt.deployer.deployArtifacts = true
+                    rt.deployer.deployMavenDescriptors = true
+                    // Publish artifacts to Artifactory
+                    rt.run pom: 'pom.xml', goals: 'clean install'
+                }
+            }
+        }
         stage('Docker Image Build'){
          when { expression {  params.action == 'create' } }
             steps{
